@@ -1,25 +1,71 @@
-import logo from './logo.svg';
-import './App.css';
+// QuizApp.js
 
-function App() {
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
+const QuizApp = () => {
+  const [questions, setQuestions] = useState([]);
+  const [userAnswers, setUserAnswers] = useState([]);
+  const [score, setScore] = useState(null);
+
+  useEffect(() => {
+    // Fetch questions from the backend when the component mounts
+    axios.get('http://localhost:5000/questions')
+      .then(response => {
+        setQuestions(response.data);
+        // Initialize userAnswers state with empty strings for each question
+        setUserAnswers(Array(response.data.length).fill(''));
+      })
+      .catch(error => {
+        console.error('Error fetching questions:', error);
+      });
+  }, []);
+
+  const handleAnswerChange = (index, answer) => {
+    const newAnswers = [...userAnswers];
+    newAnswers[index] = answer;
+    setUserAnswers(newAnswers);
+  };
+
+  const handleSubmit = () => {
+    // Send userAnswers to the backend to evaluate
+    axios.post('http://localhost:5000/submit', { answers: userAnswers })
+      .then(response => {
+        setScore(response.data.score);
+      })
+      .catch(error => {
+        console.error('Error submitting answers:', error);
+      });
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <h1>Quiz Game</h1>
+      {questions.map((question, index) => (
+        <div key={question.id}>
+          <p>{question.question}</p>
+          <ul>
+            {question.options.map((option, optionIndex) => (
+              <li key={optionIndex}>
+                <label>
+                  <input
+                    type="radio"
+                    name={`question${index}`}
+                    value={option}
+                    checked={userAnswers[index] === option}
+                    onChange={() => handleAnswerChange(index, option)}
+                  />
+                  {option}
+                </label>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+      <button onClick={handleSubmit}>Submit</button>
+      {score !== null && <p>Your score is: {score}</p>}
     </div>
   );
-}
+};
 
-export default App;
+export default QuizApp;
