@@ -1,4 +1,4 @@
-// QuizApp.js
+
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -9,11 +9,11 @@ const QuizApp = () => {
   const [score, setScore] = useState(null);
 
   useEffect(() => {
-    // Fetch questions from the backend when the component mounts
+    
     axios.get('http://localhost:5000/questions')
       .then(response => {
         setQuestions(response.data);
-        // Initialize userAnswers state with empty strings for each question
+        
         setUserAnswers(Array(response.data.length).fill(''));
       })
       .catch(error => {
@@ -28,7 +28,7 @@ const QuizApp = () => {
   };
 
   const handleSubmit = () => {
-    // Send userAnswers to the backend to evaluate
+    
     axios.post('http://localhost:5000/submit', { answers: userAnswers })
       .then(response => {
         setScore(response.data.score);
